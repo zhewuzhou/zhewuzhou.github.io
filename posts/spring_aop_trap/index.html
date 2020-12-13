@@ -1,0 +1,206 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta http-equiv=x-ua-compatible content="IE=edge, chrome=1"><title>Spring AOP：内部调用陷阱 - Studying & Blogging</title><meta name=Description content="Keep Moving, Keep Learning"><meta property="og:title" content="Spring AOP：内部调用陷阱"><meta property="og:description" content="摘要 最近写代码，遇到一个 奇怪的Spring AOP 有关的问题；本文从这个问题出发，通过问问题的方式揭示这个问题背后深层原因。
+AOP 问题代码清单  AOP Aspect: HttpHeaderValidator.java  1 2 3 4 5 6 7  @Aspect public class HttpHeaderValidator { @Before public void isUserInfoExist(){ ... } }    AOP Joint Point: Logger.java  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17  @Aspect public class Logger { public void logTransactionA(){ String user = this.getUserFromHeader(); ."><meta property="og:type" content="article"><meta property="og:url" content="https://zhewuzhou.github.io/posts/spring_aop_trap/"><meta property="og:image" content="https://zhewuzhou.github.io/logo.png"><meta property="article:published_time" content="2018-09-01T00:00:00+00:00"><meta property="article:modified_time" content="2020-12-13T22:11:36+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://zhewuzhou.github.io/logo.png"><meta name=twitter:title content="Spring AOP：内部调用陷阱"><meta name=twitter:description content="摘要 最近写代码，遇到一个 奇怪的Spring AOP 有关的问题；本文从这个问题出发，通过问问题的方式揭示这个问题背后深层原因。
+AOP 问题代码清单  AOP Aspect: HttpHeaderValidator.java  1 2 3 4 5 6 7  @Aspect public class HttpHeaderValidator { @Before public void isUserInfoExist(){ ... } }    AOP Joint Point: Logger.java  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17  @Aspect public class Logger { public void logTransactionA(){ String user = this.getUserFromHeader(); ."><meta name=application-name content="Studying & Blogging"><meta name=apple-mobile-web-app-title content="Studying & Blogging"><meta name=theme-color content="#ffffff"><meta name=msapplication-TileColor content="#da532c"><link rel="shortcut icon" type=image/x-icon href=/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><link rel=manifest href=/site.webmanifest><link rel=canonical href=https://zhewuzhou.github.io/posts/spring_aop_trap/><link rel=prev href=https://zhewuzhou.github.io/posts/gc_marking/><link rel=next href=https://zhewuzhou.github.io/posts/sql_compilation_technology_for_performance/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/style.min.css><link rel=stylesheet href=/lib/fontawesome-free/all.min.css><link rel=stylesheet href=/lib/animate/animate.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Spring AOP：内部调用陷阱","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/zhewuzhou.github.io\/posts\/spring_aop_trap\/"},"genre":"posts","keywords":"Spring, AOP","wordcount":846,"url":"https:\/\/zhewuzhou.github.io\/posts\/spring_aop_trap\/","datePublished":"2018-09-01T00:00:00+00:00","dateModified":"2020-12-13T22:11:36+08:00","license":"This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.","publisher":{"@type":"Organization","name":"zhewuzhou"},"author":{"@type":"Person","name":"zhewuzhou"},"description":""}</script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>(window.localStorage&&localStorage.getItem('theme')?localStorage.getItem('theme')==='dark':('auto'==='auto'?window.matchMedia('(prefers-color-scheme: dark)').matches:'auto'==='dark'))&&document.body.setAttribute('theme','dark');</script><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title="Studying & Blogging"><span class=header-title-pre><i class="far fa-kiss-wink-heart fa-fw"></i></span>zhewu's blog</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/>文章 </a><a class=menu-item href=/tags/>标签 </a><a class=menu-item href=/categories/>分类 </a><a class=menu-item href=/ title=GitHub><i class="fab fa-github fa-fw"></i></a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop><input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a><a href=javascript:void(0); class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a><span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span></span><a href=javascript:void(0); class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title="Studying & Blogging"><span class=header-title-pre><i class="far fa-kiss-wink-heart fa-fw"></i></span>zhewu's blog</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a><a href=javascript:void(0); class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a><span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=javascript:void(0); class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/>文章</a><a class=menu-item href=/tags/>标签</a><a class=menu-item href=/categories/>分类</a><a class=menu-item href=/ title=GitHub><i class="fab fa-github fa-fw"></i></a><a href=javascript:void(0); class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class="toc-content always-active" id=toc-content-auto></div></div><article class="page single"><h1 class="single-title animated flipInX">Spring AOP：内部调用陷阱</h1><div class=post-meta><div class=post-meta-line><span class=post-author><a href=/ title=Author rel=author class=author><i class="fas fa-user-circle fa-fw"></i>zhewuzhou</a></span>&nbsp;<span class=post-category>收录于 <a href=/categories/framework/><i class="far fa-folder fa-fw"></i>Framework</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2018-09-01>2018-09-01</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 846 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 4 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><ul><li><a href=#摘要>摘要</a></li><li><a href=#aop-问题代码清单>AOP 问题代码清单</a></li><li><a href=#表面原因>表面原因</a></li><li><a href=#进一步思考>进一步思考</a><ul><li><a href=#aop-的几种编织方式>AOP 的几种编织方式</a></li><li><a href=#新问题>新问题</a></li></ul></li><li><a href=#总结>总结</a></li></ul></li></ul></nav></div></div><div class=content id=content><h2 id=摘要>摘要</h2><p>最近写代码，遇到一个 奇怪的Spring AOP 有关的问题；本文从这个问题出发，通过问问题的方式揭示这个问题背后深层原因。</p><h2 id=aop-问题代码清单>AOP 问题代码清单</h2><ul><li>AOP Aspect: HttpHeaderValidator.java</li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-java data-lang=java><span class=nd>@Aspect</span>
+<span class=kd>public</span> <span class=kd>class</span> <span class=nc>HttpHeaderValidator</span> <span class=o>{</span>
+	<span class=nd>@Before</span>
+	<span class=kd>public</span> <span class=kt>void</span> <span class=nf>isUserInfoExist</span><span class=o>(){</span>
+	  <span class=o>...</span>
+	<span class=o>}</span>
+<span class=o>}</span>
+</code></pre></td></tr></table></div></div><ul><li>AOP Joint Point: Logger.java</li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-java data-lang=java><span class=nd>@Aspect</span>
+<span class=kd>public</span> <span class=kd>class</span> <span class=nc>Logger</span> <span class=o>{</span>
+	<span class=kd>public</span> <span class=kt>void</span> <span class=nf>logTransactionA</span><span class=o>(){</span>
+      <span class=n>String</span> <span class=n>user</span> <span class=o>=</span> <span class=k>this</span><span class=o>.</span><span class=na>getUserFromHeader</span><span class=o>();</span>
+	  <span class=o>...</span>
+	<span class=o>}</span>
+	
+	<span class=kd>public</span> <span class=kt>void</span> <span class=nf>logTransactionB</span><span class=o>(){</span>
+	  <span class=n>String</span> <span class=n>user</span> <span class=o>=</span> <span class=k>this</span><span class=o>.</span><span class=na>getUserFromHeader</span><span class=o>();</span>
+	  <span class=o>...</span>
+	<span class=o>}</span>
+	
+	<span class=nd>@UserValidator</span>
+	<span class=kd>public</span> <span class=n>String</span> <span class=nf>getUserFromHeader</span><span class=o>(){</span>
+	  <span class=o>...</span>
+	<span class=o>}</span>
+<span class=o>}</span>
+</code></pre></td></tr></table></div></div><p>代码的逻辑是，通过 UserValidator 将检查 Http Header 用户信息的切片逻辑插入到方法 getUserFromHeader() 之前；由于 Logger 类多处写日志的方法都会调用 getUserFromHeader() 因此，也就等价于多处写日志的时候都会进行 Header 的检查，避免了在每一个写日志的方法上加上 annotation.</p><p>然而执行代码却发现切片逻辑根本没有被执行；如果换种写法，把 UserValidator 加到每一个写日志的方法上，切片逻辑被调用了；这是为什么呢？</p><h2 id=表面原因>表面原因</h2><p>Spring AOP 文档中有如下描述：</p><blockquote><p>Okay, so what is to be done about this? The best approach (the term best is used loosely here) is to refactor your code such that the self-invocation does not happen. For sure, this does entail some work on your part, but it is the best, least-invasive approach. The next approach is absolutely horrendous, and I am almost reticent to point it out precisely because it is so horrendous.</p></blockquote><p>上述代码切面逻辑之所以没有被调用，原因在于方法 getUserFromHeader 的调用发生在类 Logger 内部 (self-invocation) , 因此上述代码是不工作的，<a href=https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#aop-proxying target=_blank rel="noopener noreffer">Spring官方文档</a> 还给出了一段解释：</p><blockquote><p>The key thing to understand here is that the client code inside the main(..) of the Main class has a reference to the proxy. This means that method calls on that object reference will be calls on the proxy, and as such the proxy will be able to delegate to all of the interceptors (advice) that are relevant to that particular method call. However, once the call has finally reached the target object, the SimplePojo reference in this case, any method calls that it may make on itself, such as this.bar() or this.foo(), are going to be invoked against the this reference, and not the proxy. This has important implications. It means that self-invocation is not going to result in the advice associated with a method invocation getting a chance to execute.</p></blockquote><p>按照这个解释，在 logTransactionA() 方法被调用的时候，其内部调用 getUserFromHeader() 指向的是 this 也就是 Logger 类对象，而不是调用前插入切片逻辑的的代理方法。</p><p>只要注意写 AOP 代码的时候不要出现内部调用代理方法，似乎这个问题就得到了解决。然而更多的问题浮现出来：</p><ul><li><strong>为什么内部调用会导致 Spring AOP 失效?</strong></li><li><strong>为什么内部调用的时候调用指向 this 指针而非 proxy 方法？</strong></li></ul><h2 id=进一步思考>进一步思考</h2><p>内部调用导致 Spring AOP 失效的问题本质实际上是一个设计问题；要弄清楚这个问题，需要在更高的层次上了解更多的细节。</p><h3 id=aop-的几种编织方式>AOP 的几种编织方式</h3><p>在进一步探索之前有必要了解下 AOP 的几种编织方式；所谓编织即切片逻辑插入切入点的过程；有编译时编织、加载时编织和运行时编织等多种方式，Spring AOP 的编织方式是运行时编织；尽管编译时编织提供更好的灵活性，比如甚至可以将切片逻辑插入到某一具体代码行附近，然而相比于运行时编织其依赖更多。</p><p>运行时编织：即运行时基于 Java Dynamic Proxy 特性（基于接口），或者基于 CGLib、ByteBuddy 等（基于实现类），通过子类 (Proxy) 的方式将切片逻辑和切入点函数调用粘连到一起；Spring AOP 实际上是运行时编织，其编织粒度是函数运行级。
+<img class=lazyload src=/svg/loading.min.svg data-src=https://blog-image-1258275666.cos.ap-chengdu.myqcloud.com/SpringAOP.png data-srcset="https://blog-image-1258275666.cos.ap-chengdu.myqcloud.com/SpringAOP.png, https://blog-image-1258275666.cos.ap-chengdu.myqcloud.com/SpringAOP.png 1.5x, https://blog-image-1258275666.cos.ap-chengdu.myqcloud.com/SpringAOP.png 2x" data-sizes=auto alt=https://blog-image-1258275666.cos.ap-chengdu.myqcloud.com/SpringAOP.png title=运行时编织></p><h3 id=新问题>新问题</h3><p>既然 Spring AOP 通过 Proxy 也就是 Subclass 的方式实现，那么其他类调用方法 logTransactionA() 时候实际上通过代理，而代理除了切片逻辑之外，肯定需要调用父类 Logger 的 logTransactionA() 方法，假设其调用方式为 super.logTransactionA()，那么由于多态的存在，最终 代理类中 getUserFromHeader() 应该被调用，也就是即便是内部调用，切片逻辑也应该被调用到；既然 AOP 在内部调用场景下失效，那么代理类在调用父类的方法的时候，必然不是简单的 super.logTransactionA()，<strong>那么代理类究竟是如何调用父类的方法的呢？</strong></p><p>这个问题可以再源码中找到答案，首先 Spring AOP 的某人代理创建工厂如下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-java data-lang=java>	<span class=kd>public</span> <span class=n>AopProxy</span> <span class=nf>createAopProxy</span><span class=o>(</span><span class=n>AdvisedSupport</span> <span class=n>config</span><span class=o>)</span> <span class=kd>throws</span> <span class=n>AopConfigException</span> <span class=o>{</span>
+		<span class=k>if</span> <span class=o>(</span><span class=n>config</span><span class=o>.</span><span class=na>isOptimize</span><span class=o>()</span> <span class=o>||</span> <span class=n>config</span><span class=o>.</span><span class=na>isProxyTargetClass</span><span class=o>()</span> <span class=o>||</span> <span class=n>hasNoUserSuppliedProxyInterfaces</span><span class=o>(</span><span class=n>config</span><span class=o>))</span> <span class=o>{</span>
+			<span class=n>Class</span><span class=o>&lt;?&gt;</span> <span class=n>targetClass</span> <span class=o>=</span> <span class=n>config</span><span class=o>.</span><span class=na>getTargetClass</span><span class=o>();</span>
+			<span class=k>if</span> <span class=o>(</span><span class=n>targetClass</span> <span class=o>==</span> <span class=kc>null</span><span class=o>)</span> <span class=o>{</span>
+				<span class=k>throw</span> <span class=k>new</span> <span class=n>AopConfigException</span><span class=o>(</span><span class=s>&#34;TargetSource cannot determine target class: &#34;</span> <span class=o>+</span>
+						<span class=s>&#34;Either an interface or a target is required for proxy creation.&#34;</span><span class=o>);</span>
+			<span class=o>}</span>
+			<span class=k>if</span> <span class=o>(</span><span class=n>targetClass</span><span class=o>.</span><span class=na>isInterface</span><span class=o>()</span> <span class=o>||</span> <span class=n>Proxy</span><span class=o>.</span><span class=na>isProxyClass</span><span class=o>(</span><span class=n>targetClass</span><span class=o>))</span> <span class=o>{</span>
+				<span class=k>return</span> <span class=k>new</span> <span class=n>JdkDynamicAopProxy</span><span class=o>(</span><span class=n>config</span><span class=o>);</span>
+			<span class=o>}</span>
+			<span class=k>return</span> <span class=k>new</span> <span class=n>ObjenesisCglibAopProxy</span><span class=o>(</span><span class=n>config</span><span class=o>);</span>
+		<span class=o>}</span>
+		<span class=k>else</span> <span class=o>{</span>
+			<span class=k>return</span> <span class=k>new</span> <span class=n>JdkDynamicAopProxy</span><span class=o>(</span><span class=n>config</span><span class=o>);</span>
+		<span class=o>}</span>
+	<span class=o>}</span>
+</code></pre></td></tr></table></div></div><p>基于 CGlib 的 ObjenesisCglibAopProxy 会创建 Proxy 对象，然后通过 CGLib 回调的方式，切片逻辑被插入到切入点。限于篇幅，有关于 CGLib Callback 的细节请参考 <a href=https://dzone.com/articles/cglib-missing-manual target=_blank rel="noopener noreffer">CGLib Callback 细节</a></p><p>本文所举的 Spring AOP 场景下，最终回调类 DynamicAdvisedInterceptor 的 intercept 方法会被调用，这个方法如下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-java data-lang=java>		<span class=kd>public</span> <span class=n>Object</span> <span class=nf>intercept</span><span class=o>(</span><span class=n>Object</span> <span class=n>proxy</span><span class=o>,</span> <span class=n>Method</span> <span class=n>method</span><span class=o>,</span> <span class=n>Object</span><span class=o>[]</span> <span class=n>args</span><span class=o>,</span> <span class=n>MethodProxy</span> <span class=n>methodProxy</span><span class=o>)</span> <span class=kd>throws</span> <span class=n>Throwable</span> <span class=o>{</span>
+			<span class=n>Object</span> <span class=n>oldProxy</span> <span class=o>=</span> <span class=kc>null</span><span class=o>;</span>
+			<span class=kt>boolean</span> <span class=n>setProxyContext</span> <span class=o>=</span> <span class=kc>false</span><span class=o>;</span>
+			<span class=n>Object</span> <span class=n>target</span> <span class=o>=</span> <span class=kc>null</span><span class=o>;</span>
+			<span class=n>TargetSource</span> <span class=n>targetSource</span> <span class=o>=</span> <span class=k>this</span><span class=o>.</span><span class=na>advised</span><span class=o>.</span><span class=na>getTargetSource</span><span class=o>();</span>
+			<span class=k>try</span> <span class=o>{</span>
+				<span class=k>if</span> <span class=o>(</span><span class=k>this</span><span class=o>.</span><span class=na>advised</span><span class=o>.</span><span class=na>exposeProxy</span><span class=o>)</span> <span class=o>{</span>
+					<span class=c1>// Make invocation available if necessary.
+</span><span class=c1></span>					<span class=n>oldProxy</span> <span class=o>=</span> <span class=n>AopContext</span><span class=o>.</span><span class=na>setCurrentProxy</span><span class=o>(</span><span class=n>proxy</span><span class=o>);</span>
+					<span class=n>setProxyContext</span> <span class=o>=</span> <span class=kc>true</span><span class=o>;</span>
+				<span class=o>}</span>
+				<span class=c1>// Get as late as possible to minimize the time we &#34;own&#34; the target, in case it comes from a pool...
+</span><span class=c1></span>				<span class=n>target</span> <span class=o>=</span> <span class=n>targetSource</span><span class=o>.</span><span class=na>getTarget</span><span class=o>();</span>
+				<span class=n>Class</span><span class=o>&lt;?&gt;</span> <span class=n>targetClass</span> <span class=o>=</span> <span class=o>(</span><span class=n>target</span> <span class=o>!=</span> <span class=kc>null</span> <span class=o>?</span> <span class=n>target</span><span class=o>.</span><span class=na>getClass</span><span class=o>()</span> <span class=o>:</span> <span class=kc>null</span><span class=o>);</span>
+				<span class=n>List</span><span class=o>&lt;</span><span class=n>Object</span><span class=o>&gt;</span> <span class=n>chain</span> <span class=o>=</span> <span class=k>this</span><span class=o>.</span><span class=na>advised</span><span class=o>.</span><span class=na>getInterceptorsAndDynamicInterceptionAdvice</span><span class=o>(</span><span class=n>method</span><span class=o>,</span> <span class=n>targetClass</span><span class=o>);</span>
+				<span class=n>Object</span> <span class=n>retVal</span><span class=o>;</span>
+				<span class=c1>// Check whether we only have one InvokerInterceptor: that is,
+</span><span class=c1></span>				<span class=c1>// no real advice, but just reflective invocation of the target.
+</span><span class=c1></span>				<span class=k>if</span> <span class=o>(</span><span class=n>chain</span><span class=o>.</span><span class=na>isEmpty</span><span class=o>()</span> <span class=o>&amp;&amp;</span> <span class=n>Modifier</span><span class=o>.</span><span class=na>isPublic</span><span class=o>(</span><span class=n>method</span><span class=o>.</span><span class=na>getModifiers</span><span class=o>()))</span> <span class=o>{</span>
+					<span class=c1>// We can skip creating a MethodInvocation: just invoke the target directly.
+</span><span class=c1></span>					<span class=c1>// Note that the final invoker must be an InvokerInterceptor, so we know
+</span><span class=c1></span>					<span class=c1>// it does nothing but a reflective operation on the target, and no hot
+</span><span class=c1></span>					<span class=c1>// swapping or fancy proxying.
+</span><span class=c1></span>					<span class=n>Object</span><span class=o>[]</span> <span class=n>argsToUse</span> <span class=o>=</span> <span class=n>AopProxyUtils</span><span class=o>.</span><span class=na>adaptArgumentsIfNecessary</span><span class=o>(</span><span class=n>method</span><span class=o>,</span> <span class=n>args</span><span class=o>);</span>
+					<span class=n>retVal</span> <span class=o>=</span> <span class=n>methodProxy</span><span class=o>.</span><span class=na>invoke</span><span class=o>(</span><span class=n>target</span><span class=o>,</span> <span class=n>argsToUse</span><span class=o>);</span>
+				<span class=o>}</span>
+				<span class=k>else</span> <span class=o>{</span>
+					<span class=c1>// We need to create a method invocation...
+</span><span class=c1></span>					<span class=n>retVal</span> <span class=o>=</span> <span class=k>new</span> <span class=n>CglibMethodInvocation</span><span class=o>(</span><span class=n>proxy</span><span class=o>,</span> <span class=n>target</span><span class=o>,</span> <span class=n>method</span><span class=o>,</span> <span class=n>args</span><span class=o>,</span> <span class=n>targetClass</span><span class=o>,</span> <span class=n>chain</span><span class=o>,</span> <span class=n>methodProxy</span><span class=o>).</span><span class=na>proceed</span><span class=o>();</span>
+				<span class=o>}</span>
+				<span class=n>retVal</span> <span class=o>=</span> <span class=n>processReturnType</span><span class=o>(</span><span class=n>proxy</span><span class=o>,</span> <span class=n>target</span><span class=o>,</span> <span class=n>method</span><span class=o>,</span> <span class=n>retVal</span><span class=o>);</span>
+				<span class=k>return</span> <span class=n>retVal</span><span class=o>;</span>
+			<span class=o>}</span>
+			<span class=k>finally</span> <span class=o>{</span>
+				<span class=k>if</span> <span class=o>(</span><span class=n>target</span> <span class=o>!=</span> <span class=kc>null</span> <span class=o>&amp;&amp;</span> <span class=o>!</span><span class=n>targetSource</span><span class=o>.</span><span class=na>isStatic</span><span class=o>())</span> <span class=o>{</span>
+					<span class=n>targetSource</span><span class=o>.</span><span class=na>releaseTarget</span><span class=o>(</span><span class=n>target</span><span class=o>);</span>
+				<span class=o>}</span>
+				<span class=k>if</span> <span class=o>(</span><span class=n>setProxyContext</span><span class=o>)</span> <span class=o>{</span>
+					<span class=c1>// Restore old proxy.
+</span><span class=c1></span>					<span class=n>AopContext</span><span class=o>.</span><span class=na>setCurrentProxy</span><span class=o>(</span><span class=n>oldProxy</span><span class=o>);</span>
+				<span class=o>}</span>
+			<span class=o>}</span>
+		<span class=o>}</span>
+</code></pre></td></tr></table></div></div><p>调用 proxy 类同名方法，最终会通过 CGlib 调用到对应的回调类 intercept 方法，在调用此方法的时候具体的父类方法和参数都被具化 (Method 类)；也就是在最后的调用中一定是通过被代理类的实例完成调用，即表面上通过代理继承父类的方式，实际上子类在调用父类方法的时候通过父类的实例调用，因此在本文描述的内部调场景下，切片逻辑没有被调用。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-java data-lang=java>	<span class=kd>public</span> <span class=n>Object</span> <span class=nf>invoke</span><span class=o>(</span><span class=n>Object</span> <span class=n>obj</span><span class=o>,</span> <span class=n>Object</span><span class=o>[]</span> <span class=n>args</span><span class=o>)</span> <span class=kd>throws</span> <span class=n>Throwable</span> <span class=o>{</span>
+		<span class=k>try</span> <span class=o>{</span>
+			<span class=n>init</span><span class=o>();</span>
+			<span class=n>FastClassInfo</span> <span class=n>fci</span> <span class=o>=</span> <span class=n>fastClassInfo</span><span class=o>;</span>
+			<span class=k>return</span> <span class=n>fci</span><span class=o>.</span><span class=na>f1</span><span class=o>.</span><span class=na>invoke</span><span class=o>(</span><span class=n>fci</span><span class=o>.</span><span class=na>i1</span><span class=o>,</span> <span class=n>obj</span><span class=o>,</span> <span class=n>args</span><span class=o>);</span>
+		<span class=o>}</span>
+		<span class=k>catch</span> <span class=o>(</span><span class=n>InvocationTargetException</span> <span class=n>ex</span><span class=o>)</span> <span class=o>{</span>
+			<span class=k>throw</span> <span class=n>ex</span><span class=o>.</span><span class=na>getTargetException</span><span class=o>();</span>
+		<span class=o>}</span>
+		<span class=k>catch</span> <span class=o>(</span><span class=n>IllegalArgumentException</span> <span class=n>ex</span><span class=o>)</span> <span class=o>{</span>
+			<span class=k>if</span> <span class=o>(</span><span class=n>fastClassInfo</span><span class=o>.</span><span class=na>i1</span> <span class=o>&lt;</span> <span class=n>0</span><span class=o>)</span>
+				<span class=k>throw</span> <span class=k>new</span> <span class=n>IllegalArgumentException</span><span class=o>(</span><span class=s>&#34;Protected method: &#34;</span> <span class=o>+</span> <span class=n>sig1</span><span class=o>);</span>
+			<span class=k>throw</span> <span class=n>ex</span><span class=o>;</span>
+		<span class=o>}</span>
+	<span class=o>}</span>
+</code></pre></td></tr></table></div></div><p>上面的源码摘自 ProxyMethod ，父类的方法正是通过这个方法被调用的，这里可以看参数 obj ，这个参数正是父类的实例，而这正是多态没有生效的真正原因。</p><h2 id=总结>总结</h2><p>本文从一个 Spring AOP 失效的场景出发，通过 Spring 官方文档，发现其有讲到本文所描述的内部调用场景下 AOP 会失效，然而并没有给出确切的原因。</p><p>如果考虑多态，即便是内部调用，AOP 也不该失效；通过源码和 Spring AOP 的设计思想，内部调用正真的失效原因如下：</p><ul><li>Spring AOP 不支持编译时编织；而编译时编织提供了最大的灵活性，支持内部调用 AOP 并不是难事。</li><li>最终当父类的方法被调用的时候，已经是具体化了 Method 类，因此多态不会生效。</li></ul></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2020-12-13</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-markdown href=/posts/spring_aop_trap/index.md target=_blank>阅读原始文档</a></span></div><div class=post-info-share><span><a href=javascript:void(0); title="分享到 Twitter" data-sharer=twitter data-url=https://zhewuzhou.github.io/posts/spring_aop_trap/ data-title="Spring AOP：内部调用陷阱" data-hashtags=Spring,AOP><i class="fab fa-twitter fa-fw"></i></a><a href=javascript:void(0); title="分享到 Facebook" data-sharer=facebook data-url=https://zhewuzhou.github.io/posts/spring_aop_trap/ data-hashtag=Spring><i class="fab fa-facebook-square fa-fw"></i></a><a href=javascript:void(0); title="分享到 Linkedin" data-sharer=linkedin data-url=https://zhewuzhou.github.io/posts/spring_aop_trap/><i class="fab fa-linkedin fa-fw"></i></a><a href=javascript:void(0); title="分享到 Hacker News" data-sharer=hackernews data-url=https://zhewuzhou.github.io/posts/spring_aop_trap/ data-title="Spring AOP：内部调用陷阱"><i class="fab fa-hacker-news fa-fw"></i></a><a href=javascript:void(0); title="分享到 Line" data-sharer=line data-url=https://zhewuzhou.github.io/posts/spring_aop_trap/ data-title="Spring AOP：内部调用陷阱"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=javascript:void(0); title="分享到 微博" data-sharer=weibo data-url=https://zhewuzhou.github.io/posts/spring_aop_trap/ data-title="Spring AOP：内部调用陷阱"><i class="fab fa-weibo fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/spring/>Spring</a>,&nbsp;<a href=/tags/aop/>AOP</a></section><section><span><a href=javascript:void(0); onclick=window.history.back();>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/gc_marking/ class=prev rel=prev title="GC 标记算法：从分阶段标记到无停顿标记"><i class="fas fa-angle-left fa-fw"></i>GC 标记算法：从分阶段标记到无停顿标记</a>
+<a href=/posts/sql_compilation_technology_for_performance/ class=next rel=next title="数据库性能之翼：SQL 语句运行时编译">数据库性能之翼：SQL 语句运行时编译<i class="fas fa-angle-right fa-fw"></i></a></div></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreffer" title="Hugo 0.79.0">Hugo</a> 强力驱动 | 主题 - <a href=https://github.com/dillonzq/LoveIt target=_blank rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i>LoveIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2020</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/ target=_blank>zhewuzhou</a></span>&nbsp;|&nbsp;<span class=license><a rel="license external nofollow noopener noreffer" href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank>CC BY-NC 4.0</a></span></div></div></footer></div><div id=fixed-buttons><a href=# id=back-to-top class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i></a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><script type=text/javascript src=/lib/smooth-scroll/smooth-scroll.min.js></script><script type=text/javascript src=/lib/autocomplete/autocomplete.min.js></script><script type=text/javascript src=/lib/algoliasearch/algoliasearch-lite.umd.min.js></script><script type=text/javascript src=/lib/lazysizes/lazysizes.min.js></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript>window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"lightGallery":{"actualSize":false,"exThumbImage":"data-thumbnail","hideBarsDelay":2000,"selector":".lightgallery","speed":400,"thumbContHeight":80,"thumbWidth":80,"thumbnail":true},"search":{"algoliaAppID":"XNEGAJ4RGK","algoliaIndex":"zhewuzhou.github.io","algoliaSearchKey":"200e37ab4b326abd73ff15c859620520","highlightTag":"em","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50,"type":"algolia"},"twemoji":true};</script><script type=text/javascript src=/js/theme.min.js></script><script type=text/javascript>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','UA-71202311-1',{'anonymize_ip':true});</script><script type=text/javascript src="https://www.googletagmanager.com/gtag/js?id=UA-71202311-1" async></script></body></html>
