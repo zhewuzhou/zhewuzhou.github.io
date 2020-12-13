@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>区块链 on Studying &amp; Blogging</title><link>https://zhewuzhou.github.io/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/</link><description>Recent content in 区块链 on Studying &amp; Blogging</description><generator>Hugo -- gohugo.io</generator><language>zh-CN</language><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Wed, 04 Jul 2018 00:00:00 +0000</lastBuildDate><atom:link href="https://zhewuzhou.github.io/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/index.xml" rel="self" type="application/rss+xml"/><item><title>工作量证明即分布式时钟</title><link>https://zhewuzhou.github.io/posts/pow_as_distributed_clock/</link><pubDate>Wed, 04 Jul 2018 00:00:00 +0000</pubDate><guid>https://zhewuzhou.github.io/posts/pow_as_distributed_clock/</guid><description>目录 目录 摘要 问题由来 顺序 区块链是分布式系统 工作量证明即分布式时钟，时钟的基本单位十分钟 每个矿工都是时间的创造者 统一的时钟和顺序 工作量证明即时钟 摘要 本文试图从分布式系统（分布式时钟）的角度理解区块链（比特币，下同）的一致性；实 际上区块链之所以安全可信，工作量证明是主要原因，数字签名和哈希校验是辅助性因素。
+比特币系统的交易并非立即可信，通常支付发起后需要等一个小时交易才算正式生效，大 宗交易甚至要等 二十四个小时；等待时间的背后，正是比特币基于工作量证明的 渐进 式 信任机制。
+比特币系统是一个去中心化的分布式系统，其网路内所有的节点身份均等；因此渐进式的 信任机制的本质是 工作量证明所构建分布式时钟。
+本文从“双花”问题展开，通过不断提问的方式逐步接近本文的主题。
+问题由来 “双花”问题是区块链系统上的主要安全问题之一；在去中心化的 P2P 网络上，由于数据 的可复制性，使得系统可能存在同一笔数字资产因不当操作被重复使用的情况。现实世界 中纸币天然的屏蔽了这个问题，即便是网上交易，在大银行主导的中心化的支付网络上， 个人用户复制数据进行“双花”基本上不可能，因此也鲜有“双花”的问题。
+一个典型的区块链上双花问题场景如下：
+Bob 拥有一幅价值 $250000 的名家画作，她希望通过 Bitcoin 系统卖出这幅画作。
+Alice 对这幅画作很感兴趣，Alice 通过区块链系统，向 Bob 支付了价值 $250000 的比 特币。
+Bob 等了一段时间，看到区块链上已经有若干个确认（即当前交易所在区块之后新增了 区块）后，将画作发送给 Bob
+假设 Alice 拥有整个区块链网络中 51% 的算力，Alice 可以重新挖矿，对这笔交易和这笔 交易所在的块进行共识攻击；由于 Alice 拥有 51% 的算力，因此很快共识攻击所在的区 块链分叉上的区块数很快就超过正常交易的分叉</description></item></channel></rss>
