@@ -129,5 +129,5 @@ ART 数据节点类型：
 [11]: https://zhewuzhou.github.io/2018/09/13/SQL_Compilation_Technology_For_Performance/
 [12]: https://zhewuzhou.github.io/2018/09/25/Weekly-Paper-A-Survey-of-B-Tree-Locking-Techniques/
 [13]: https://zhewuzhou.github.io/2018/09/29/Weekly-Paper-An-Empirical-Evalution-of-In-Memory-MVCC/
-[14]: https://zhewuzhou.github.io/2018/10/18/Database-Indexes/
+[14]: https://zhewuzhou.github.io/posts/database-indexes/
 

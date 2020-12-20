@@ -52,17 +52,15 @@
 3. [每周一论文：A Survey of B-Tree Locking Techniques][8]
 4. [每周一论文：An Empirical Evaluation of In-Memory Multi-Version Concurrency Control][9]
 5. [数据库索引数据结构总结][10]
-5. [每周一论文：An Empirical Evaluation of In-Memory Multi-Version Concurrency Control][11]
 
 [1]: https://15721.courses.cs.cmu.edu/spring2018/papers/10-storage/arulraj-sigmod2016.pdf
 [2]: https://cloud.tencent.com/product/tidb
 [3]: https://yq.aliyun.com/articles/193401
 [4]: https://github.com/baidu/BaikalDB
 [5]: https://www.memsql.com/
-[6]: https://zhewuzhou.github.io/2018/08/07/SQL_as_universe_language_in_data_world/
-[7]: https://zhewuzhou.github.io/2018/09/13/SQL_Compilation_Technology_For_Performance/
-[8]: https://zhewuzhou.github.io/2018/09/25/Weekly-Paper-A-Survey-of-B-Tree-Locking-Techniques/
-[9]: https://zhewuzhou.github.io/2018/09/29/Weekly-Paper-An-Empirical-Evalution-of-In-Memory-MVCC/
-[10]: https://zhewuzhou.github.io/2018/10/18/Database-Indexes/
-[11]: https://zhewuzhou.github.io/2018/10/20/Weekly-Paper-Bridging-the-Archipelago-between-Row-Stores-Column-Stores-Hybrid-Workloads/
+[6]: https://zhewuzhou.github.io/posts/sql_as_universe_language_in_data_world/
+[7]: https://zhewuzhou.github.io/posts/sql_compilation_technology_for_performance/
+[8]: https://zhewuzhou.github.io/posts/weekly-paper-a-survey-of-b-tree-locking-techniques/
+[9]: https://zhewuzhou.github.io/posts/weekly-paper-an-empirical-evalution-of-in-memory-mvcc/
+[10]: https://zhewuzhou.github.io/posts/database-indexes/
 

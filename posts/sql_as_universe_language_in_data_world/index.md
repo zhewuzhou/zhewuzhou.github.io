@@ -134,9 +134,9 @@ SQL 这一古老的技术，实际上是一个非常优秀的抽象模型，对�
 4. [每周一论文：An Empirical Evaluation of In-Memory Multi-Version Concurrency Control][4]
 5. [数据库索引数据结构总结][5]
 
-[1]: https://zhewuzhou.github.io/2018/08/07/SQL_as_universe_language_in_data_world/
-[2]: https://zhewuzhou.github.io/2018/09/13/SQL_Compilation_Technology_For_Performance/
-[3]: https://zhewuzhou.github.io/2018/09/25/Weekly-Paper-A-Survey-of-B-Tree-Locking-Techniques/
-[4]: https://zhewuzhou.github.io/2018/09/29/Weekly-Paper-An-Empirical-Evalution-of-In-Memory-MVCC/
-[5]: https://zhewuzhou.github.io/2018/10/18/Database-Indexes/
+[1]: https://zhewuzhou.github.io/posts/sql_as_universe_language_in_data_world/
+[2]: https://zhewuzhou.github.io/posts/sql_compilation_technology_for_performance/
+[3]: https://zhewuzhou.github.io/posts/weekly-paper-a-survey-of-b-tree-locking-techniques/
+[4]: https://zhewuzhou.github.io/posts/weekly-paper-an-empirical-evalution-of-in-memory-mvcc/
+[5]: https://zhewuzhou.github.io/posts/database-indexes/
 

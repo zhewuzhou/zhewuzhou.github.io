@@ -105,9 +105,9 @@ MVCC 在事务过程中不可避免的会产生很多的旧版本，这些旧版
 5. [数据库索引数据结构总结][6]
 
 [1]: https://15721.courses.cs.cmu.edu/spring2018/papers/05-mvcc1/wu-vldb2017.pdf
-[2]: https://zhewuzhou.github.io/2018/08/07/SQL_as_universe_language_in_data_world/
-[3]: https://zhewuzhou.github.io/2018/09/13/SQL_Compilation_Technology_For_Performance/
-[4]: https://zhewuzhou.github.io/2018/09/25/Weekly-Paper-A-Survey-of-B-Tree-Locking-Techniques/
-[5]: https://zhewuzhou.github.io/2018/09/29/Weekly-Paper-An-Empirical-Evalution-of-In-Memory-MVCC/
-[6]: https://zhewuzhou.github.io/2018/10/18/Database-Indexes/
+[2]: https://zhewuzhou.github.io/posts/sql_as_universe_language_in_data_world/
+[3]: https://zhewuzhou.github.io/posts/sql_compilation_technology_for_performance/
+[4]: https://zhewuzhou.github.io/posts/weekly-paper-a-survey-of-b-tree-locking-techniques/
+[5]: https://zhewuzhou.github.io/posts/weekly-paper-an-empirical-evalution-of-in-memory-mvcc/
+[6]: https://zhewuzhou.github.io/posts/database-indexes/
 

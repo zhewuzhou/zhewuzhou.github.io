@@ -93,10 +93,10 @@ PostgreSQL 也支持显示的行级锁
 [1]: https://15721.courses.cs.cmu.edu/spring2018/papers/07-latching/a16-graefe.pdf
 [2]: https://www.ibm.com/developerworks/cn/linux/l-cn-mcsspinlock/index.html
 [3]: https://my.oschina.net/liuyuanyuangogo/blog/497929
-[4]: https://zhewuzhou.github.io/2018/08/07/SQL_as_universe_language_in_data_world/
-[5]: https://zhewuzhou.github.io/2018/09/13/SQL_Compilation_Technology_For_Performance/
-[6]: https://zhewuzhou.github.io/2018/09/25/Weekly-Paper-A-Survey-of-B-Tree-Locking-Techniques/
-[7]: https://zhewuzhou.github.io/2018/09/29/Weekly-Paper-An-Empirical-Evalution-of-In-Memory-MVCC/
-[8]: https://zhewuzhou.github.io/2018/10/18/Database-Indexes/
+[4]: https://zhewuzhou.github.io/posts/sql_as_universe_language_in_data_world/
+[5]: https://zhewuzhou.github.io/posts/sql_compilation_technology_for_performance/
+[6]: https://zhewuzhou.github.io/posts/weekly-paper-a-survey-of-b-tree-locking-techniques/
+[7]: https://zhewuzhou.github.io/posts/weekly-paper-an-empirical-evalution-of-in-memory-mvcc/
+[8]: https://zhewuzhou.github.io/posts/database-indexes/
 
 

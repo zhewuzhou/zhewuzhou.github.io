@@ -113,9 +113,9 @@ extrapolatePipelineDurations(f, n, w):
 [4]: https://www.zhihu.com/question/52220920/answer/340220500
 [5]: https://www.pgcon.org/2017/schedule/events/1092.en.html
 [6]: https://15721.courses.cs.cmu.edu/spring2018/papers/03-compilation/kohn-icde2018.pdf
-[7]: https://zhewuzhou.github.io/2018/08/07/SQL_as_universe_language_in_data_world/
-[8]: https://zhewuzhou.github.io/2018/09/13/SQL_Compilation_Technology_For_Performance/
-[9]: https://zhewuzhou.github.io/2018/09/25/Weekly-Paper-A-Survey-of-B-Tree-Locking-Techniques/
-[10]: https://zhewuzhou.github.io/2018/09/29/Weekly-Paper-An-Empirical-Evalution-of-In-Memory-MVCC/
-[11]: https://zhewuzhou.github.io/2018/10/18/Database-Indexes/
+[7]: https://zhewuzhou.github.io/posts/sql_as_universe_language_in_data_world/
+[8]: https://zhewuzhou.github.io/posts/sql_compilation_technology_for_performance/
+[9]: https://zhewuzhou.github.io/posts/weekly-paper-a-survey-of-b-tree-locking-techniques/
+[10]: https://zhewuzhou.github.io/posts/weekly-paper-an-empirical-evalution-of-in-memory-mvcc/
+[11]: https://zhewuzhou.github.io/posts/database-indexes/
 
